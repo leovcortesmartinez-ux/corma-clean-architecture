@@ -63,8 +63,39 @@ Interfaz del Repository: ICuttingToolRepository con los métodos existsById(tool
 Adapter: SqliteCuttingToolRepository or InMemoryCuttingToolRepository
 
 
-¿Qué parte de su proyecto les costó más ubicar en una capa?
-me costó trabajo ubicar la regla 3, al principio pensaba que todo iba en la Entidad CuttingTool, pero nos dimos cuenta de que una entidad por sí sola no puede saber qué otras herramientas existen guardadas en la base de datos sin acoplarse a ella. Entendimos que la validación se divide: la Entidad valida que el ID no esté vacío, y el Caso de Uso le pregunta a la interfaz ICuttingToolRepository si el ID ya está registrado antes de crear la herramienta.
+¿Qué parte de tu proyecto te costó más ubicar en una capa?
+Me costó trabajo ubicar la regla 3. Al principio pensaba que todo iba en la entidad CuttingTool, pero me di cuenta de que una entidad por sí sola no puede saber qué otras herramientas existen guardadas en la base de datos sin acoplarse a ella. Entendí que la validación se divide: la entidad valida que el ID no esté vacío, y el caso de uso le pregunta a la interfaz ICuttingToolRepository si el ID ya está registrado antes de crear la herramienta.
 
-¿Qué ganan con poder cambiar la infraestructura sin tocar el núcleo?
-Ganamos velocidad de desarrollo, facilidad de pruebas y adaptabilidad tecnológica. Para una aplicación web como Corma MES, podemos programar y probar todas las reglas del taller en milisegundos usando adaptadores en memoria (InMemory), prototipar guardando en un archivo JSON o localStorage, y finalmente pasar a producción en la nube (como Firebase Firestore o PostgreSQL) sin tocar ni una sola línea de código de nuestras reglas de maquinado ni correr el riesgo de romper la lógica del negocio.
+¿Qué ganas con poder cambiar la infraestructura sin tocar el núcleo?
+Gano velocidad de desarrollo, facilidad de pruebas y adaptabilidad tecnológica. Para una aplicación web como Corma MES, puedo programar y probar todas las reglas del taller en milisegundos usando adaptadores en memoria, prototipar guardando en un archivo JSON o localStorage, y finalmente pasar a producción en la nube  sin tocar ni una sola línea de código de mis reglas de maquinado ni correr el riesgo de romper la lógica del negocio.
+
+```mermaid
+graph TD
+    subgraph Infrastructure [Capa de Infraestructura]
+        UI[React Components]
+        MemRepo[InMemoryWorkOrderRepository]
+        JsonRepo[JsonFileWorkOrderRepository]
+    end
+
+    subgraph Application [Capa de Aplicación]
+        UC[CreateWorkOrderUseCase]
+        IRepo[IWorkOrderRepository Interface]
+    end
+
+    subgraph Domain [Capa de Dominio]
+        Entity[WorkOrder Entity]
+    end
+
+    UI -->|Inyecta| UC
+    MemRepo -.->|Implementa| IRepo
+    JsonRepo -.->|Implementa| IRepo
+    UC -->|Usa| IRepo
+    UC -->|Instancia| Entity
+    IRepo -->|Conoce| Entity
+
+    style Entity fill:#10b981,color:#fff
+    style UC fill:#3b82f6,color:#fff
+    style IRepo fill:#3b82f6,color:#fff
+    style UI fill:#f59e0b,color:#fff
+    style MemRepo fill:#f59e0b,color:#fff
+    style JsonRepo fill:#f59e0b,color:#fff
